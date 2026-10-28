@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rufas-diet-project"
+version = "0.1.0"
+description = "Infraestrutura de experimentos de dieta integrada ao RuFaS"
+requires-python = ">=3.12,<3.14"
+dependencies = ["pandas==2.2.3"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+

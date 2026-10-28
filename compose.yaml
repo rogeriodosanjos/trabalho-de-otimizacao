@@ -1,0 +1,45 @@
+services:
+  rufas-worker:
+    build:
+      context: .
+      dockerfile: docker/worker.Dockerfile
+    environment:
+      RUFAS_ROOT: /opt/rufas
+      SHARED_ROOT: /workspace/shared
+      WORKER_POLL_SECONDS: ${WORKER_POLL_SECONDS:-1}
+      SIMULATION_TIMEOUT_SECONDS: ${SIMULATION_TIMEOUT_SECONDS:-1800}
+    volumes:
+      - simulation-data:/workspace/shared
+    init: true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "test", "-f", "/tmp/rufas-worker-ready"]
+      interval: 10s
+      timeout: 3s
+      start_period: 10s
+      retries: 10
+
+  notebook:
+    build:
+      context: .
+      dockerfile: docker/notebook.Dockerfile
+    environment:
+      JUPYTER_TOKEN: ${JUPYTER_TOKEN:-rufas}
+      SHARED_ROOT: /workspace/shared
+      PYTHONPATH: /workspace/src
+    ports:
+      - "${JUPYTER_PORT:-8888}:8888"
+    volumes:
+      - simulation-data:/workspace/shared
+      - ./notebooks:/workspace/notebooks
+      - ./configs:/workspace/configs:ro
+      - ./src:/workspace/src:ro
+    depends_on:
+      rufas-worker:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  simulation-data:
+    name: ${SIMULATION_VOLUME_NAME:-rufas-notebook-data}
+

@@ -1,0 +1,16 @@
+.git
+.gitmodules
+.env
+shared
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+RuFaS/.git
+RuFaS/.github
+RuFaS/docs
+RuFaS/tests
+RuFaS/output
+RuFaS/DataCollectionApp
+RuFaS/helpful_scripts
+Docs
+

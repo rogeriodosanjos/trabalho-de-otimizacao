@@ -1,0 +1,41 @@
+{
+  "name": "dieta_referencia",
+  "simulation_days": 30,
+  "random_seed": 42,
+  "herd": {
+    "cow_num": 20,
+    "milking_cow_fraction": 0.8,
+    "breed": "HO",
+    "parity_fractions": {
+      "parity_1": 0.4,
+      "parity_2": 0.25,
+      "parity_3": 0.2,
+      "parity_4": 0.1,
+      "parity_5": 0.05
+    }
+  },
+  "milk": {
+    "fat_percent": 4.0,
+    "protein_percent": 3.2,
+    "mature_body_weight_kg": 740.1
+  },
+  "diet": {
+    "mode": "fixed",
+    "formulation_interval_days": 30,
+    "ingredients": [
+      {"feed_type": 23, "name": "Blood meal, low dRUP", "ration_percentage": 0.74, "purchased_feed_cost_usd_per_kg_dm": 0.10},
+      {"feed_type": 44, "name": "Corn grain dry, medium grind", "ration_percentage": 15.31, "purchased_feed_cost_usd_per_kg_dm": 0.50},
+      {"feed_type": 50, "name": "Corn silage, immature", "ration_percentage": 37.45, "purchased_feed_cost_usd_per_kg_dm": 0.01},
+      {"feed_type": 104, "name": "Grass/legume mix, legume silage", "ration_percentage": 0.37, "purchased_feed_cost_usd_per_kg_dm": 0.01},
+      {"feed_type": 110, "name": "Legume silage, mid-maturity", "ration_percentage": 17.65, "purchased_feed_cost_usd_per_kg_dm": 0.01},
+      {"feed_type": 301, "name": "Farm ES Mineral Mix", "ration_percentage": 3.27, "purchased_feed_cost_usd_per_kg_dm": 1.00},
+      {"feed_type": 302, "name": "Farm ES Midwest BP Blend", "ration_percentage": 25.21, "purchased_feed_cost_usd_per_kg_dm": 0.10}
+    ]
+  },
+  "economics": {
+    "milk_price_usd_per_kg": 0.45,
+    "milk_price_source": "Hipótese didática; confirmar fonte, região e data antes da análise final",
+    "currency": "USD"
+  }
+}
+
