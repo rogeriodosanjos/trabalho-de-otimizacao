@@ -7,10 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /workspace
 
 COPY requirements/notebook.txt /tmp/notebook-requirements.txt
-COPY requirements/dev.txt /tmp/dev-requirements.txt
-RUN pip install --no-cache-dir \
-    -r /tmp/notebook-requirements.txt \
-    -r /tmp/dev-requirements.txt
+RUN pip install --no-cache-dir -r /tmp/notebook-requirements.txt
 
 COPY pyproject.toml /workspace/project/pyproject.toml
 COPY src /workspace/project/src

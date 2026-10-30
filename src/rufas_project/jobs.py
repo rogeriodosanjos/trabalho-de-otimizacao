@@ -87,11 +87,3 @@ def load_result(job_id: str, shared_root: str | Path = "/workspace/shared") -> d
         raise FileNotFoundError(f"Resultado indisponível; estado atual: {status['status']}")
     return json.loads(path.read_text(encoding="utf-8"))
 
-
-def list_jobs(shared_root: str | Path = "/workspace/shared") -> list[dict[str, Any]]:
-    jobs_root = Path(shared_root) / "jobs"
-    if not jobs_root.exists():
-        return []
-    jobs = [json.loads(path.read_text(encoding="utf-8")) for path in jobs_root.glob("*/status.json")]
-    return sorted(jobs, key=lambda item: item["created_at"], reverse=True)
-

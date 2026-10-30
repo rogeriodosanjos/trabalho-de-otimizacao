@@ -1,8 +1,8 @@
 # Aprendendo RuFaS com Jupyter Notebook
 
-Primeira etapa do trabalho de otimização: um ambiente reproduzível para configurar, executar e comparar simulações reais do **RuFaS** sem precisar usar comandos no terminal durante o estudo.
+Trabalho de otimização em um ambiente reproduzível para configurar, executar e comparar simulações reais do **RuFaS** sem precisar usar comandos no terminal durante o estudo.
 
-O projeto contém duas etapas reproduzíveis: aprendizado do fluxo do RuFaS e otimização nutricional de uma dieta de menor custo. Ainda não há API ou interface web.
+O projeto contém três etapas reproduzíveis: aprendizado do fluxo do RuFaS, otimização nutricional de uma dieta de menor custo e análise de sensibilidade interativa. Ainda não há API ou interface web.
 
 ## Arquitetura
 
@@ -45,7 +45,32 @@ Suba o ambiente:
 docker compose up --build
 ```
 
-Abra [http://localhost:8888/lab/tree/notebooks](http://localhost:8888/lab/tree/notebooks) e informe o token `rufas`, salvo se ele tiver sido alterado em `.env`.
+### Acesso ao JupyterLab
+
+Depois que os contêineres iniciarem, abra no navegador:
+
+- [http://localhost:8888/lab/tree/notebooks](http://localhost:8888/lab/tree/notebooks)
+
+Na tela de autenticação, informe o token padrão:
+
+```text
+rufas
+```
+
+O JupyterLab usa um **token**, e não uma senha de usuário. Também é possível acessar diretamente com o token na URL:
+
+- [http://localhost:8888/lab/tree/notebooks?token=rufas](http://localhost:8888/lab/tree/notebooks?token=rufas)
+
+Para alterar o token ou a porta, copie `.env.example` para `.env` e edite:
+
+```dotenv
+JUPYTER_PORT=8888
+JUPYTER_TOKEN=rufas
+```
+
+Se a porta for alterada, substitua `8888` na URL pelo valor configurado em `JUPYTER_PORT`.
+
+### Notebooks disponíveis
 
 - `01_primeira_simulacao.ipynb`: configuração, simulação e comparação manual;
 - `02_otimizacao_dieta.ipynb`: compara nosso modelo linear de cinco pisos com o formulador NASEM do RuFaS e exporta a linha de base.
@@ -111,12 +136,8 @@ O terceiro notebook realiza uma análise interativa do tipo *what-if*. Para cada
 
 A dieta ajustada é aplicada ao RuFaS com a mesma configuração de fazenda e a mesma semente. O notebook confirma a reprodução da população, verifica as cinco restrições nas quantidades planejadas e na ração média efetivamente consumida, e compara leite, custo planejado, custo realizado, receita, margem e composição com o resultado original do nosso otimizador.
 
-## Desenvolvimento e testes
+## Estrutura da implementação
 
-Os módulos reutilizáveis ficam em `src/rufas_project/`; o worker fica em `worker/`; os cenários ficam em `configs/`.
-
-```bash
-python -m pytest
-```
+Os módulos reutilizáveis ficam em `src/rufas_project/`, o worker fica em `worker/` e o snapshot de preços fica em `configs/`.
 
 As decisões, limites e evolução proposta estão em [Docs/arquitetura-notebook-rufas.md](Docs/arquitetura-notebook-rufas.md).
