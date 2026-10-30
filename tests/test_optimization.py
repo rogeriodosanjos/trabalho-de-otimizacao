@@ -1,9 +1,22 @@
+from pathlib import Path
+
+import pandas as pd
+import pytest
+
 from rufas_project.models import DietConfig, DietIngredient, SimulationConfig
 from rufas_project.optimization import (
+    MainDietRequirements,
+    build_fixed_scenario_from_solution,
     build_min_cost_scenario,
+    derive_main_requirements_from_ration,
+    describe_custom_constraints,
     describe_min_cost_problem,
+    solve_custom_min_cost,
     summarize_lactating_ration,
 )
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def scenario():
@@ -37,3 +50,59 @@ def test_summarize_ration_converts_pen_totals_to_per_cow_values():
     assert totals["average_kg_dm_per_cow_day"] == 10
     assert totals["average_cost_usd_per_cow_day"] == 2.6
     assert frame["percentage_dm"].sum() == 100
+
+
+def full_scenario():
+    config = SimulationConfig()
+    config.diet = DietConfig(
+        mode="fixed",
+        ingredients=[
+            DietIngredient(23, 0.74, 1.81971624, "Blood meal"),
+            DietIngredient(44, 15.31, 0.27569701, "Corn grain"),
+            DietIngredient(50, 37.45, 0.01, "Corn silage"),
+            DietIngredient(104, 0.37, 0.01, "Grass legume silage"),
+            DietIngredient(110, 17.65, 0.01, "Legume silage"),
+            DietIngredient(301, 3.27, 1.00, "Mineral mix"),
+            DietIngredient(302, 25.21, 0.10, "By-product blend"),
+        ],
+    )
+    return config
+
+
+def test_custom_optimizer_returns_feasible_fixed_ration():
+    reference_ration = pd.DataFrame(
+        {
+            "feed_type": [item.feed_type for item in full_scenario().diet.ingredients],
+            "average_kg_dm_per_cow_day": [
+                item.ration_percentage / 100 * 22 for item in full_scenario().diet.ingredients
+            ],
+        }
+    )
+    requirements = derive_main_requirements_from_ration(
+        reference_ration,
+        ROOT / "RuFaS/input/data/feed/NASEM_Comp_with_TDN.csv",
+    )
+    result = solve_custom_min_cost(
+        full_scenario(),
+        ROOT / "RuFaS/input/data/feed/NASEM_Comp_with_TDN.csv",
+        requirements,
+    )
+    assert result.success, result.message
+    assert abs(result.ration["percentage_dm"].sum() - 100) < 1e-9
+    assert result.constraint_report["satisfied"].all()
+    assert len(describe_custom_constraints(requirements)) == 5
+    assert "Proteína bruta" in describe_custom_constraints(requirements)["Restrição"].tolist()
+
+    fixed = build_fixed_scenario_from_solution(full_scenario(), result)
+    assert fixed.diet.mode == "fixed"
+    assert abs(sum(item.ration_percentage for item in fixed.diet.ingredients) - 100) < 1e-7
+
+
+def test_custom_optimizer_rejects_nonpositive_requirement():
+    requirements = MainDietRequirements(0.0, 1.0, 1.0, 1.0, 1.0)
+    with pytest.raises(Exception, match="cinco exigências"):
+        solve_custom_min_cost(
+            full_scenario(),
+            ROOT / "RuFaS/input/data/feed/NASEM_Comp_with_TDN.csv",
+            requirements,
+        )

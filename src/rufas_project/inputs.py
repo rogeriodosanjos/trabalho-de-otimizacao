@@ -10,6 +10,7 @@ from .validation import ConfigurationError, validate_simulation_config
 FILTER_CONTENT = """.*(num_lactating_cows|num_dry_cows|num_cows_total)$
 .*(daily_milk_production|milking_cow_num|dry_cow_num|avg_days_in_milk)$
 .*ration_daily_feed_totals_for_pen_3_LAC_COW$
+.*initial_.*$
 """
 
 

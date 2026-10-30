@@ -53,9 +53,18 @@ class DietConfig:
 
 @dataclass
 class EconomicConfig:
-    milk_price_usd_per_kg: float = 0.45
+    milk_price: float = 0.45
+    milk_price_unit: Literal["per_kg", "per_liter"] = "per_kg"
+    milk_density_kg_per_liter: float = 1.03
     milk_price_source: str = "Hipótese didática; substituir por fonte e data definidas pelo projeto"
     currency: str = "USD"
+
+    @property
+    def milk_price_per_kg(self) -> float:
+        """Normaliza o preço informado para a unidade usada nas saídas do RuFaS."""
+        if self.milk_price_unit == "per_liter":
+            return self.milk_price / self.milk_density_kg_per_liter
+        return self.milk_price
 
 
 @dataclass
@@ -79,7 +88,13 @@ def simulation_config_from_dict(data: dict[str, Any]) -> SimulationConfig:
     milk = MilkConfig(**data["milk"])
     ingredients = [DietIngredient(**item) for item in data["diet"].pop("ingredients")]
     diet = DietConfig(ingredients=ingredients, **data["diet"])
-    economics = EconomicConfig(**data["economics"])
+    economics_data = data["economics"]
+    # Compatibilidade com cenários gravados antes da seleção de unidade e moeda.
+    if "milk_price_usd_per_kg" in economics_data:
+        economics_data["milk_price"] = economics_data.pop("milk_price_usd_per_kg")
+        economics_data.setdefault("milk_price_unit", "per_kg")
+        economics_data.setdefault("currency", "USD")
+    economics = EconomicConfig(**economics_data)
     return SimulationConfig(
         name=data["name"],
         simulation_days=data["simulation_days"],

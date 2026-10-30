@@ -16,6 +16,7 @@ def test_prepare_inputs_from_official_examples(tmp_path):
     animal = json.loads((tmp_path / "input/animal.json").read_text())
     feed = json.loads((tmp_path / "input/feed.json").read_text())
     prices = json.loads((tmp_path / "feed_prices.json").read_text())
+    output_filter = (tmp_path / "filters/csv_notebook_lactation.txt").read_text()
 
     assert manager.exists()
     assert animal["herd_information"]["cow_num"] == 20
@@ -25,3 +26,4 @@ def test_prepare_inputs_from_official_examples(tmp_path):
     )
     assert sum(item["ration_percentage"] for item in lactating["feeds"]) == 100
     assert prices["44"] == 0.5
+    assert ".*initial_.*$" in output_filter

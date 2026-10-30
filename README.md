@@ -45,13 +45,15 @@ Suba o ambiente:
 docker compose up --build
 ```
 
-Abra <http://localhost:8888/lab/tree/notebooks> e informe o token `rufas`, salvo se ele tiver sido alterado em `.env`.
+Abra [http://localhost:8888/lab/tree/notebooks](http://localhost:8888/lab/tree/notebooks) e informe o token `rufas`, salvo se ele tiver sido alterado em `.env`.
 
 - `01_primeira_simulacao.ipynb`: configuração, simulação e comparação manual;
-- `02_otimizacao_dieta.ipynb`: formulação de menor custo com variáveis de decisão e restrições NASEM.
-- `03_analise_sensibilidade.ipynb`: variações sistemáticas de preços e análise da robustez da dieta otimizada.
+- `02_otimizacao_dieta.ipynb`: compara nosso modelo linear de cinco pisos com o formulador NASEM do RuFaS e exporta a linha de base.
+- `03_analise_sensibilidade.ipynb`: recebe a dieta do Notebook 2 e oferece barras de quantidade e preço para cada ingrediente antes de simular o ajuste na mesma fazenda.
 
 No notebook, execute as células na ordem. Tamanho do rebanho, lactação, dieta, preços e demais valores ficam visíveis e editáveis diretamente nas células. A execução valida essas entradas, gera automaticamente os arquivos físicos exigidos pelo RuFaS, acompanha o estado e carrega o resultado sem exigir outro comando.
+
+Os Notebooks 1 e 2 são independentes em execução. O Notebook 3 possui dependência explícita do Notebook 2: a Etapa 2 grava `notebook2_custom_baseline.json` no volume compartilhado, contendo fazenda, semente, restrições, preços, dieta ótima e identificador da simulação-base. Portanto, execute o Notebook 2 por completo antes da Etapa 3.
 
 Para encerrar:
 
@@ -99,11 +101,15 @@ O segundo notebook define formalmente:
 minimizar C(x) = soma(preço do ingrediente × kg de matéria seca por vaca/dia)
 ```
 
-O RuFaS usa SLSQP e restrições NASEM de energia, proteína, minerais, fibra, gordura e consumo. O notebook executa a dieta fixa e a otimizada sob as mesmas condições e compara composição, custo, produção de leite, receita e margem sobre alimentação.
+Essa função objetivo busca **somente a dieta de menor custo**; ela não maximiza diretamente a produção de leite. Nosso otimizador aplica os cinco pisos de energia (TDN), proteína bruta, cálcio, fósforo e fibra (NDF), derivados da dieta de referência calculada pelo RuFaS.
+
+Separadamente, o RuFaS usa SLSQP e seu conjunto mais amplo de condições NASEM. Depois das duas otimizações, o notebook simula as dietas sob as mesmas condições e compara composição, custo, produção de leite, receita e margem. Assim, produção, receita e margem são resultados posteriores da avaliação, e não componentes da função objetivo do nosso modelo atual.
 
 ## Etapa 3 — análise de sensibilidade
 
-O terceiro notebook aplica uma análise um fator por vez. O preço de cada ingrediente é variado em `-20%` e `+20%`, enquanto os demais valores permanecem constantes. A fila executa 15 otimizações: uma base e duas variações para cada um dos sete ingredientes. Os resultados mostram alterações de composição, custo, leite e margem, além de um ranking dos ingredientes mais influentes.
+O terceiro notebook realiza uma análise interativa do tipo *what-if*. Para cada ingrediente existem duas barras: quantidade em kg de matéria seca por vaca/dia e preço em USD/kg de matéria seca. A linha de base vem diretamente do Notebook 2; depois dos ajustes, as quantidades são convertidas em percentuais e formam uma dieta fixa para avaliação. O botão **Salvar ajustes** grava os controles em `notebook3_manual_adjustments.json`, impedindo que sejam perdidos quando uma célula é executada novamente ou o kernel é reiniciado.
+
+A dieta ajustada é aplicada ao RuFaS com a mesma configuração de fazenda e a mesma semente. O notebook confirma a reprodução da população, verifica as cinco restrições nas quantidades planejadas e na ração média efetivamente consumida, e compara leite, custo planejado, custo realizado, receita, margem e composição com o resultado original do nosso otimizador.
 
 ## Desenvolvimento e testes
 

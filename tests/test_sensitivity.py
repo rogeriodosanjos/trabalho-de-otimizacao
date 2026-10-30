@@ -1,6 +1,8 @@
 from rufas_project.models import DietConfig, DietIngredient, SimulationConfig
+from rufas_project.optimization import MainDietRequirements, solve_custom_min_cost
 from rufas_project.sensitivity import (
     build_composition_matrix,
+    generate_custom_price_sensitivity_cases,
     generate_price_sensitivity_cases,
     summarize_price_sensitivity,
 )
@@ -53,3 +55,24 @@ def test_sensitivity_summary_uses_baseline_for_percentage_changes():
     composition = build_composition_matrix(cases, results)
     assert composition.index[0] == "baseline"
     assert composition.loc["baseline", "44"] == 40
+
+
+def test_custom_sensitivity_reoptimizes_five_constraint_model(tmp_path):
+    library = tmp_path / "feeds.csv"
+    library.write_text(
+        "rufas_id,TDN,CP,calcium,phosphorus,NDF\n"
+        "44,80,10,0.5,0.3,10\n"
+        "50,60,20,1.0,0.5,40\n",
+        encoding="utf-8",
+    )
+    reference = scenario()
+    requirements = MainDietRequirements(10.0, 2.0, 100.0, 50.0, 5.0)
+    baseline = solve_custom_min_cost(reference, library, requirements)
+    cases = generate_custom_price_sensitivity_cases(
+        reference, requirements, library, baseline, multipliers=(0.8, 1.2)
+    )
+
+    assert len(cases) == 5
+    assert cases[0].label == "Linha de base do Notebook 2"
+    assert all(case.solution.constraint_report["satisfied"].all() for case in cases)
+    assert cases[1].config.random_seed == reference.random_seed

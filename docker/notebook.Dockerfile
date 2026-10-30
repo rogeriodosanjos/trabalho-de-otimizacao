@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir /workspace/project
 
 COPY notebooks /workspace/notebooks
 COPY configs /workspace/configs
+COPY RuFaS/input/data/feed/NASEM_Comp_with_TDN.csv /workspace/data/NASEM_Comp_with_TDN.csv
 
 RUN mkdir -p /workspace/shared
 

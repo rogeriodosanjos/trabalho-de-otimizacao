@@ -52,8 +52,12 @@ def validate_simulation_config(config: SimulationConfig) -> None:
             if item.purchased_feed_cost_usd_per_kg_dm < 0:
                 errors.append(f"custo negativo para feed_type {item.feed_type}")
 
-    if config.economics.milk_price_usd_per_kg < 0:
-        errors.append("milk_price_usd_per_kg não pode ser negativo")
+    if config.economics.milk_price < 0:
+        errors.append("milk_price não pode ser negativo")
+    if config.economics.milk_price_unit not in {"per_kg", "per_liter"}:
+        errors.append("milk_price_unit deve ser 'per_kg' ou 'per_liter'")
+    if config.economics.milk_density_kg_per_liter <= 0:
+        errors.append("milk_density_kg_per_liter deve ser maior que zero")
     if not config.economics.milk_price_source.strip():
         errors.append("milk_price_source deve documentar a fonte ou hipótese")
 

@@ -33,7 +33,9 @@
     ]
   },
   "economics": {
-    "milk_price_usd_per_kg": 0.45,
+    "milk_price": 0.45,
+    "milk_price_unit": "per_kg",
+    "milk_density_kg_per_liter": 1.03,
     "milk_price_source": "Hipótese didática; confirmar fonte, região e data antes da análise final",
     "currency": "USD"
   }

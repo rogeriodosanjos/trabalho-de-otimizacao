@@ -24,3 +24,10 @@ def test_parity_fractions_must_sum_to_one():
     config.herd.parity_fractions.parity_1 = 0.90
     with pytest.raises(ConfigurationError, match="paridade"):
         validate_simulation_config(config)
+
+
+def test_economic_unit_must_be_supported():
+    config = reference_config()
+    config.economics.milk_price_unit = "per_gallon"
+    with pytest.raises(ConfigurationError, match="milk_price_unit"):
+        validate_simulation_config(config)

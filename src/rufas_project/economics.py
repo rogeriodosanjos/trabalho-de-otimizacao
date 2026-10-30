@@ -5,6 +5,7 @@ from .models import SimulationConfig
 
 def calculate_economics(result: dict[str, Any], config: SimulationConfig) -> dict[str, Any]:
     """Calcula receita e margem sobre alimentação fora do RuFaS."""
+    milk_price_per_kg = config.economics.milk_price_per_kg
     cost_by_feed = {
         str(feed_id): float(cost)
         for feed_id, cost in result.get("feed_costs_usd_per_kg_dm", {}).items()
@@ -19,7 +20,7 @@ def calculate_economics(result: dict[str, Any], config: SimulationConfig) -> dic
             float(amount) * cost_by_feed.get(str(feed_id), 0.0)
             for feed_id, amount in row.get("lactating_feed_kg_dm", {}).items()
         )
-        milk_revenue = float(row.get("milk_kg") or 0) * config.economics.milk_price_usd_per_kg
+        milk_revenue = float(row.get("milk_kg") or 0) * milk_price_per_kg
         daily.append(
             {
                 "day": row["day"],
@@ -30,11 +31,17 @@ def calculate_economics(result: dict[str, Any], config: SimulationConfig) -> dic
         )
     total_revenue = sum(row["milk_revenue"] for row in daily)
     total_feed_cost = sum(row["lactating_feed_cost"] for row in daily)
+    total_milk_kg = sum(float(row.get("milk_kg") or 0) for row in result["series"])
     return {
         "source": "Calculado pelo projeto, não pelo RuFaS",
         "currency": config.economics.currency,
-        "milk_price_per_kg": config.economics.milk_price_usd_per_kg,
+        "milk_price_input": config.economics.milk_price,
+        "milk_price_input_unit": config.economics.milk_price_unit,
+        "milk_density_kg_per_liter": config.economics.milk_density_kg_per_liter,
+        "milk_price_per_kg": milk_price_per_kg,
         "milk_price_source": config.economics.milk_price_source,
+        "total_milk_kg": total_milk_kg,
+        "total_milk_liters_equivalent": total_milk_kg / config.economics.milk_density_kg_per_liter,
         "total_milk_revenue": total_revenue,
         "total_lactating_feed_cost": total_feed_cost,
         "margin_over_lactating_feed_cost": total_revenue - total_feed_cost,
